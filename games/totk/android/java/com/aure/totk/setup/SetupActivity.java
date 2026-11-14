@@ -84,7 +84,7 @@ public final class SetupActivity extends Activity implements SetupService.Listen
     private static final String[] ALL_ROLES = {"romfs", "exefs", "base", "update", "keys"};
     private static final int REQ_PICK = 100, REQ_DRIVER = 900, REQ_NOTIFY = 901, REQ_EXPORT = 902, REQ_IMPORT_ZIP = 903, REQ_IMPORT_TREE = 904, REQ_MIRROR = 905,
             REQ_DATA_FOLDER = 906, REQ_ACCESS = 907;
-    private static final String[] TABS = {Settings.PERFORMANCE, Settings.PICTURE, Settings.SCREEN};
+    private static final String[] TABS = {Settings.PERFORMANCE, Settings.PICTURE, Settings.SCREEN, Settings.CHEATS};
 
     private enum Screen { WELCOME, SETUP_STORAGE, ROUTE, FILES, UPDATES, UPDATE_DOWNLOAD, INSTALL, ERROR, INTERRUPTED, HOME, GRAPHICS, CONTROLS, DATA, STORAGE, ABOUT, LICENSES,
         LICENSE_TEXT, CONFIRM_DELETE, SAVE_ERROR, SAVES, BACKUPS, SAVE_IMPORT, SAVE_CONFLICT, CHOICE }
@@ -1230,7 +1230,8 @@ public final class SetupActivity extends Activity implements SetupService.Listen
         tabs.setGravity(Gravity.TOP);
         Widgets.Key left = new Widgets.Key(this, "L", 38);
         tabs.addView(left, Widgets.margins(Widgets.size(-2, -2), 0, 19, 10, 0));
-        String[] names = {Strings.TAB_PERFORMANCE, Strings.TAB_PICTURE, Strings.TAB_SCREEN}, icons = {"perf", "picture", "screen"};
+        String[] names = {Strings.TAB_PERFORMANCE, Strings.TAB_PICTURE, Strings.TAB_SCREEN, "Cheats"};
+        String[] icons = {"perf", "picture", "screen", "controls"};
         for (int i = 0; i < TABS.length; i++) {
             String id = TABS[i];
             Widgets.Tab t = new Widgets.Tab(this, icons[i], names[i], v -> { if (!tab.equals(id)) { tab = id; restoreFocus = PRIMARY; render(); } });
@@ -1263,8 +1264,9 @@ public final class SetupActivity extends Activity implements SetupService.Listen
         switch (tab) {
             case Settings.PERFORMANCE: keys.addAll(Arrays.asList("frame_rate", "frame_gen", "render_res", "latency", "gpu_feed")); break;
             case Settings.PICTURE: keys.addAll(Arrays.asList("upscaler", "sharpness", "aa", "shadows")); break;
+            case Settings.CHEATS: keys.addAll(Arrays.asList(Settings.CHEAT_OPTIONS)); break;
             default:
-                keys.addAll(Arrays.asList("console_mode", "native_hud", "overlay", "overlay_pos"));
+                keys.addAll(Arrays.asList("console_mode", "aspect_ratio", "native_hud", "overlay", "overlay_pos"));
                 if (SettingsStore.secondaryDisplay(this)) keys.add("second_screen");
         }
         for (String key : keys) settingRow(list, key);
@@ -1426,7 +1428,9 @@ public final class SetupActivity extends Activity implements SetupService.Listen
             detailText.setText(Strings.optionText(key));
             detailDiagram.setVisibility(View.VISIBLE);
             detailDiagram.show(key, settings, SettingsStore.secondaryDisplay(this));
-            if (!Settings.option(key).tab.equals(Settings.CONTROLS)) fact(Strings.GPU_COST, new Widgets.Meter(this).set(cost(key, value)));
+            String optionTab = Settings.option(key).tab;
+            if (!Settings.CONTROLS.equals(optionTab) && !Settings.CHEATS.equals(optionTab))
+                fact(Strings.GPU_COST, new Widgets.Meter(this).set(cost(key, value)));
             switch (key) {
                 case "frame_rate":
                     fact(Strings.WORKS_WITH, !value.equals("30") ? Strings.valueName("frame_gen", "off") + " frame generation" : "every option");

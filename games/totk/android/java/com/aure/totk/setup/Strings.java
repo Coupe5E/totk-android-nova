@@ -11,7 +11,7 @@ final class Strings {
     static final String SUBTITLE = "UNOFFICIAL ANDROID PORT";
     static final String LEGAL = "You must own the game. Your files stay on this device; nothing is uploaded.";
     /** The project's public home; one constant so the release can point it elsewhere. */
-    static final String PROJECT_URL = "https://github.com/AurelioB/totk-android";
+    static final String PROJECT_URL = "https://github.com" + com.aure.totk.UpdateRules.PROJECT;
     /** The projects this one is built on: MacNativeGames by ly05010419, and kitcatkode's Android port of it. */
     static final String UPSTREAM_URL = "https://github.com/ly05010419/MacNativeGames";
     static final String ANDROID_PORT_URL = "https://github.com/kitcatkode/MacNativeGames";
@@ -137,6 +137,11 @@ final class Strings {
             case "aa": return "Anti-aliasing";
             case "shadows": return "Shadows";
             case "console_mode": return "Console mode";
+            case "aspect_ratio": return "Aspect ratio";
+            case "cheat_durability": return "Infinite durability";
+            case "cheat_shopping": return "Free shopping";
+            case "cheat_arrows": return "Infinite arrows";
+            case "cheat_battery": return "Infinite Zonai energy";
             case "native_hud": return "Native HUD";
             case "overlay": return "Performance overlay";
             case "overlay_pos": return "Overlay position";
@@ -161,6 +166,11 @@ final class Strings {
             case "aa": return "Smooths jagged edges";
             case "shadows": return "Lower saves GPU time in busy areas";
             case "console_mode": return "Docked uses the game's larger TV resolution";
+            case "aspect_ratio": return "Match a 4:3 handheld display";
+            case "cheat_durability": return "Keep weapons, bows and shields from wearing out";
+            case "cheat_shopping": return "Buy items without spending rupees";
+            case "cheat_arrows": return "Shoot without consuming arrows";
+            case "cheat_battery": return "Keep Zonai devices powered";
             case "native_hud": return "Draws menus and text at the panel's own resolution";
             case "overlay": return "Frame rate and frame time while you play";
             case "overlay_pos": return "Corner of the screen";

@@ -129,7 +129,7 @@ class ManifestTests(unittest.TestCase):
 
     def test_generic_app_manifest(self):
         m = self.manifest(icon=build_apk.LAUNCHER_ICON, round_icon=build_apk.LAUNCHER_ROUND, release=True)
-        self.assertEqual(m['manifest'][(None, 'package')], (3, 'com.aure.totk'))
+        self.assertEqual(m['manifest'][(None, 'package')], (3, 'com.coupe5e.totk.nova'))
         self.assertEqual(m['uses-sdk'][(A, 'minSdkVersion')], (0x10, 33))
         self.assertEqual(sorted(a[(A, 'name')][1] for t, a in m['all'] if t == 'uses-permission'),
                          sorted(['android.permission.FOREGROUND_SERVICE', 'android.permission.FOREGROUND_SERVICE_DATA_SYNC',
@@ -138,7 +138,7 @@ class ManifestTests(unittest.TestCase):
                                  'android.permission.INTERNET', 'android.permission.ACCESS_NETWORK_STATE',
                                  'android.permission.REQUEST_INSTALL_PACKAGES']))
         app = m['application']
-        self.assertEqual(app[(A, 'label')], (3, 'TotK Native'))
+        self.assertEqual(app[(A, 'label')], (3, 'TotK Native Nova'))
         for name, value in (('hasCode', TRUE), ('debuggable', FALSE), ('extractNativeLibs', TRUE), ('allowBackup', FALSE),
                             ('hasFragileUserData', TRUE)):
             self.assertEqual(app[(A, name)], value, name)
@@ -161,7 +161,7 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(game[(A, 'screenOrientation')], (0x10, 6))
         cover = by_name(m, 'activity', build_apk.COVER_ACTIVITY)
         self.assertEqual(cover[(A, 'exported')], FALSE)
-        self.assertEqual(cover[(A, 'taskAffinity')], (3, 'com.aure.totk.cover'))
+        self.assertEqual(cover[(A, 'taskAffinity')], (3, 'com.coupe5e.totk.nova.cover'))
         self.assertNotEqual(cover[(A, 'taskAffinity')][1], build_apk.PACKAGE)
         self.assertEqual(cover[(A, 'excludeFromRecents')], TRUE)
         self.assertEqual(cover[(A, 'launchMode')], (0x10, 2))

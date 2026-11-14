@@ -1043,9 +1043,68 @@ void runtime_diag_xpoke(unsigned off,float value){
 #endif
 static void patch_output_res(Module *m);
 static void patch_render_res(Module *m);
+#if defined(__ANDROID__) && defined(TOTK_ANDROID_APP)
+typedef struct {
+    uint32_t offset, original, replacement;
+} CheatWord;
+
+/* Apply against the authenticated 1.4.3 image while text is writable.
+ * Check every word before changing any of the cheat's sites. */
+static void apply_cheat(Module *m, const char *key, const CheatWord *words, size_t count) {
+    const char *enabled = getenv(key);
+    if (!enabled || strcmp(enabled, "1")) return;
+    for (size_t i = 0; i < count; i++) {
+        uint32_t offset = words[i].offset, actual;
+        if (offset + sizeof actual > m->size) {
+            fprintf(stderr, "[totk] %s skipped: site %#x outside main image\n", key, offset);
+            return;
+        }
+        memcpy(&actual, m->base + offset, sizeof actual);
+        if (actual != words[i].original) {
+            fprintf(stderr, "[totk] %s skipped: unexpected instruction at main+%#x\n", key, offset);
+            return;
+        }
+    }
+    for (size_t i = 0; i < count; i++)
+        memcpy(m->base + words[i].offset, &words[i].replacement, sizeof words[i].replacement);
+    fprintf(stderr, "[totk] %s applied\n", key);
+}
+
+/* MyNXCheats, TotK 1.4.3, build ID 277178B7DBA1B6D4, entries 4 and 30–32.
+ * The durability subroutine copies maximum durability into current durability. */
+static void patch_cheats(Module *m) {
+    static const CheatWord shopping[] = {{0x250767c, 0x5a980715, 0x1a9813f5}};
+    static const CheatWord arrows[] = {{0x1b78cd0, 0x12800001, 0x2a1f03e1}};
+    static const CheatWord battery[] = {
+        {0x078251c, 0xbd004668, 0xbd004662},
+        {0x0782568, 0xbd004668, 0xbd004662},
+    };
+    /* Twelve executable padding bytes between the DRS60 and DRS framegen veneers. */
+    uint64_t stub = ((m->text_end + 15) & ~15ULL) + 340;
+    if (stub + 12 <= ((m->text_end + 0xfff) & ~0xfffULL) && stub + 12 <= m->size) {
+        const CheatWord durability[] = {
+            {0x21eca9c, 0x1b09a148, 0x1b09a3e8},
+            {0x0282e58, 0xb9400901, branch(0x0282e58, stub) | 0x80000000u},
+            {0x02829f4, 0xb9400901, branch(0x02829f4, stub) | 0x80000000u},
+            {(uint32_t)stub, 0, 0xb9401901}, /* ldr w1, [x8, #0x18] */
+            {(uint32_t)stub + 4, 0, 0xb9000901}, /* str w1, [x8, #8] */
+            {(uint32_t)stub + 8, 0, 0xd65f03c0}, /* ret */
+        };
+        apply_cheat(m, "TOTK_CHEAT_DURABILITY", durability, sizeof durability / sizeof *durability);
+    } else if (getenv("TOTK_CHEAT_DURABILITY")) {
+        fprintf(stderr, "[totk] TOTK_CHEAT_DURABILITY skipped: no room for veneer\n");
+    }
+    apply_cheat(m, "TOTK_CHEAT_SHOPPING", shopping, sizeof shopping / sizeof *shopping);
+    apply_cheat(m, "TOTK_CHEAT_ARROWS", arrows, sizeof arrows / sizeof *arrows);
+    apply_cheat(m, "TOTK_CHEAT_BATTERY", battery, sizeof battery / sizeof *battery);
+}
+#endif
 void runtime_game_patches(Module *m) {
     runtime_survey_init(m);
     if (strcmp(m->name, "main")) runtime_fail("1.4.3 game patches expect main");
+#if defined(__ANDROID__) && defined(TOTK_ANDROID_APP)
+    patch_cheats(m);
+#endif
     patch_bench_time(m);
     patch_realtime(m);
     patch_output_res(m);

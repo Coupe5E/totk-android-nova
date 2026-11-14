@@ -11,7 +11,7 @@ caller's: a PEM file holding the private key and its certificate, or a PKCS#12 f
 environment variable holding its password. Only --make-key (developer builds) creates a missing key.
 
 usage: build_apk.py --dex classes.dex --lib libtotk.so [--lib more.so ...] --out totk.apk --key key.pem [--key-pass-env VAR]
-       [--make-key] [--min-sdk 33] [--target-sdk 33] [--package com.aure.totk] [--label "TotK Native"] [--version-code N]
+       [--make-key] [--min-sdk 33] [--target-sdk 33] [--package com.coupe5e.totk.nova] [--label "TotK Native Nova"] [--version-code N]
        [--version-name X] [--assets DIR] [--ondevice-xlate /path/to/android-arm64/totk_xlate] [--launcher-icon icon.png]
        [--release]
 Needs the Python package 'cryptography'; --launcher-icon also requires Pillow.
@@ -21,8 +21,8 @@ from pathlib import Path
 
 ANDROID_NS = 'http://schemas.android.com/apk/res/android'
 PSO_SOURCE = Path(__file__).resolve().parents[2] / 'assets/pso_keys.tsv'
-PACKAGE = 'com.aure.totk'
-LABEL = 'TotK Native'
+PACKAGE = 'com.coupe5e.totk.nova'
+LABEL = 'TotK Native Nova'
 # The Java classes (android/java/com/aure/totk): the launcher is the setup screen, which starts the game activity
 # once <game>/install.json says playable; setup and its foreground service run in their own process so the game
 # process starts without the setup library.

@@ -11,6 +11,8 @@ import java.util.Map;
 final class Settings {
     static final String PERFORMANCE = "performance", PICTURE = "picture", SCREEN = "screen", CONTROLS = "controls";
     static final String CUSTOM = "custom";
+    static final String CHEATS = "cheats";
+    static final String[] CHEAT_OPTIONS = {"cheat_durability", "cheat_shopping", "cheat_arrows", "cheat_battery"};
     /** Preset ids in card order; CUSTOM is computed, never applied. */
     static final String[] PRESETS = {"light", "balanced", "smooth", "60fps"};
 
@@ -44,6 +46,11 @@ final class Settings {
         new Option("aa", PICTURE, "fxaa", "fxaa", "smaa", "off"),
         new Option("shadows", PICTURE, "high", "high", "medium", "low"),
         new Option("console_mode", SCREEN, "handheld", "handheld", "docked"),
+        new Option("aspect_ratio", SCREEN, "16:9", "16:9", "4:3"),
+        new Option("cheat_durability", CHEATS, "off", "off", "on"),
+        new Option("cheat_shopping", CHEATS, "off", "off", "on"),
+        new Option("cheat_arrows", CHEATS, "off", "off", "on"),
+        new Option("cheat_battery", CHEATS, "off", "off", "on"),
         new Option("native_hud", SCREEN, "off", "off", "on"),
         new Option("overlay", SCREEN, "off", "off", "fps", "full"),
         new Option("overlay_pos", SCREEN, "tr", "tl", "tr", "bl", "br"),
@@ -261,6 +268,11 @@ final class Settings {
             default: break;
         }
         line(out, "TOTK_OPERATION_MODE=" + get("console_mode"));
+        if ("4:3".equals(get("aspect_ratio"))) line(out, "TOTK_ASPECT=4:3");
+        for (String cheat : CHEAT_OPTIONS) {
+            if ("on".equals(get(cheat)))
+                line(out, "TOTK_" + cheat.toUpperCase(java.util.Locale.ROOT) + "=1");
+        }
         line(out, "TOTK_NATIVE_UI=" + (get("native_hud").equals("on") ? "1" : "0"));
         line(out, "TOTK_OVERLAY=" + get("overlay"));
         line(out, "TOTK_OVERLAY_POS=" + get("overlay_pos"));

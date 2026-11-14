@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
 
 /** Update policy and private-file state, shared by the game and :setup and exercised on the host JVM. */
 public final class UpdateRules {
-    public static final String PROJECT = "/AurelioB/totk-android";
+    public static final String PROJECT = "/Coupe5E/totk-android-nova";
+    public static final String PACKAGE = "com.coupe5e.totk.nova";
     public static final String ASSET_PREFIX = "TotK-Native-";
     private static final Pattern VERSION = Pattern.compile("(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)");
     private UpdateRules() { }
@@ -74,7 +75,7 @@ public final class UpdateRules {
     }
     public interface Head { String location() throws IOException; }
     public static String check(boolean enabled, boolean online, String current, String pkg, boolean override, URI source, Head head) {
-        if (!enabled || !online || !version(current) || (!"com.aure.totk".equals(pkg) && !override)) return null;
+        if (!enabled || !online || !version(current) || (!PACKAGE.equals(pkg) && !override)) return null;
         try {
             String latest = location(head.location(), source, override);
             return latest != null && compare(latest, current) > 0 ? latest : null;

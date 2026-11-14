@@ -298,7 +298,7 @@ def companion_assets(tree, version, work, out, logs, env):
 
 
 # ---- the app ----
-APP_PACKAGE = 'com.aure.totk'
+APP_PACKAGE = 'com.coupe5e.totk.nova'
 INSTALL_SH = r'''#!/bin/sh
 # The Android app TotK Native (android/APP.md), a developer build: its game folder is the app's folder on shared storage
 #   /sdcard/Android/data/{package}/files   (install.json, rewritten/, game-data/, extracted/, shaders/, companion/,

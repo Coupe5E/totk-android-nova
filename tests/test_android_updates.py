@@ -14,20 +14,20 @@ import java.io.*;
 import java.nio.file.*;
 public class UpdateProbe {
     static URI github = URI.create("https://github.com");
-    static String tag(String version) { return "https://github.com/AurelioB/totk-android/releases/tag/v" + version; }
+    static String tag(String version) { return "https://github.com/Coupe5E/totk-android-nova/releases/tag/v" + version; }
     static void equal(Object a, Object b) { if (!java.util.Objects.equals(a, b)) throw new AssertionError(a + " != " + b); }
     public static void main(String[] args) throws Exception {
         switch (args[0]) {
         case "location":
             equal(UpdateRules.location(tag("1.0.2"), github, false), "1.0.2");
-            for (String bad : new String[]{"", "/AurelioB/totk-android/releases/tag/v1.0.2", tag("1.0.2-rc1"), tag("1.0.2+build"),
+            for (String bad : new String[]{"", "/Coupe5E/totk-android-nova/releases/tag/v1.0.2", tag("1.0.2-rc1"), tag("1.0.2+build"),
                 tag("01.0.2"), tag("1.2"), tag("1.0.2/"), tag("1.0.2?x=1"), tag("1.0.2#x"), tag("%31.0.2"),
                 tag("1.0.2").replace("github.com", "github.com.evil.test"), tag("1.0.2").replace("https:", "http:"),
                 tag("1.0.2").replace("github.com", "user@github.com"), tag("1.0.2").replace("github.com", "github.com:443"),
                 tag("1.0.2").replace("AurelioB", "Other")}) equal(UpdateRules.location(bad, github, false), null);
             URI fake = URI.create("http://192.168.8.2:8042");
-            equal(UpdateRules.location("http://192.168.8.2:8042/AurelioB/totk-android/releases/tag/v1.0.2", fake, true), "1.0.2");
-            equal(UpdateRules.location("http://192.168.8.3:8042/AurelioB/totk-android/releases/tag/v1.0.2", fake, true), null);
+            equal(UpdateRules.location("http://192.168.8.2:8042/Coupe5E/totk-android-nova/releases/tag/v1.0.2", fake, true), "1.0.2");
+            equal(UpdateRules.location("http://192.168.8.3:8042/Coupe5E/totk-android-nova/releases/tag/v1.0.2", fake, true), null);
             break;
         case "semver":
             equal(Integer.signum(UpdateRules.compare("1.10.0", "1.9.999")), 1);
@@ -48,29 +48,29 @@ public class UpdateProbe {
         case "decision":
             int[] calls = {0};
             UpdateRules.Head head = () -> { calls[0]++; return tag("1.0.2"); };
-            equal(UpdateRules.check(true, true, "1.0.1", "com.aure.totk", false, github, head), "1.0.2");
+            equal(UpdateRules.check(true, true, "1.0.1", "com.coupe5e.totk.nova", false, github, head), "1.0.2");
             equal(calls[0], 1);
-            equal(UpdateRules.check(false, true, "1.0.1", "com.aure.totk", false, github, head), null);
-            equal(UpdateRules.check(true, false, "1.0.1", "com.aure.totk", false, github, head), null);
-            equal(UpdateRules.check(true, true, "1.0.1-dev", "com.aure.totk", false, github, head), null);
+            equal(UpdateRules.check(false, true, "1.0.1", "com.coupe5e.totk.nova", false, github, head), null);
+            equal(UpdateRules.check(true, false, "1.0.1", "com.coupe5e.totk.nova", false, github, head), null);
+            equal(UpdateRules.check(true, true, "1.0.1-dev", "com.coupe5e.totk.nova", false, github, head), null);
             equal(UpdateRules.check(true, true, "1.0.1", "com.aure.totk.test", false, github, head), null);
             equal(calls[0], 1);
-            equal(UpdateRules.check(true, true, "1.0.2", "com.aure.totk", false, github, head), null);
-            equal(UpdateRules.check(true, true, "1.0.3", "com.aure.totk", false, github, head), null);
-            equal(UpdateRules.check(true, true, "1.0.1", "com.aure.totk", false, github, () -> { throw new java.net.SocketTimeoutException(); }), null);
-            equal(UpdateRules.check(true, true, "1.0.1", "com.aure.totk", false, github, () -> "malformed"), null);
+            equal(UpdateRules.check(true, true, "1.0.2", "com.coupe5e.totk.nova", false, github, head), null);
+            equal(UpdateRules.check(true, true, "1.0.3", "com.coupe5e.totk.nova", false, github, head), null);
+            equal(UpdateRules.check(true, true, "1.0.1", "com.coupe5e.totk.nova", false, github, () -> { throw new java.net.SocketTimeoutException(); }), null);
+            equal(UpdateRules.check(true, true, "1.0.1", "com.coupe5e.totk.nova", false, github, () -> "malformed"), null);
             equal(UpdateRules.check(true, true, "1.0.1", "com.aure.totk.test", true, github, head), "1.0.2");
             break;
         case "trust":
             byte[][] cert = {new byte[]{1, 2, 3}}, wrong = {new byte[]{4, 5, 6}};
-            equal(UpdateRules.verify("com.aure.totk", 10001, cert, "com.aure.totk", 10002, cert), null);
+            equal(UpdateRules.verify("com.coupe5e.totk.nova", 10001, cert, "com.coupe5e.totk.nova", 10002, cert), null);
             for (String result : new String[]{
-                UpdateRules.verify("com.aure.totk", 10001, cert, "other", 10002, cert),
-                UpdateRules.verify("com.aure.totk", 10001, cert, "com.aure.totk", 10001, cert),
-                UpdateRules.verify("com.aure.totk", 10001, cert, "com.aure.totk", 10000, cert),
-                UpdateRules.verify("com.aure.totk", 10001, cert, "com.aure.totk", 10002, wrong),
-                UpdateRules.verify("com.aure.totk", 10001, null, "com.aure.totk", 10002, cert),
-                UpdateRules.verify("com.aure.totk", 10001, cert, "com.aure.totk", 10002, null)}) if (result == null) throw new AssertionError("accepted untrusted APK");
+                UpdateRules.verify("com.coupe5e.totk.nova", 10001, cert, "other", 10002, cert),
+                UpdateRules.verify("com.coupe5e.totk.nova", 10001, cert, "com.coupe5e.totk.nova", 10001, cert),
+                UpdateRules.verify("com.coupe5e.totk.nova", 10001, cert, "com.coupe5e.totk.nova", 10000, cert),
+                UpdateRules.verify("com.coupe5e.totk.nova", 10001, cert, "com.coupe5e.totk.nova", 10002, wrong),
+                UpdateRules.verify("com.coupe5e.totk.nova", 10001, null, "com.coupe5e.totk.nova", 10002, cert),
+                UpdateRules.verify("com.coupe5e.totk.nova", 10001, cert, "com.coupe5e.totk.nova", 10002, null)}) if (result == null) throw new AssertionError("accepted untrusted APK");
             equal(UpdateRules.allowedDownload(URI.create("https://release-assets.githubusercontent.com/a?token=b"), github, false), true);
             for (String bad : new String[]{"http://github.com/a", "https://github.com.evil/a", "https://evilgithubusercontent.com/a", "https://user@github.com/a", "https://github.com:8080/a"})
                 equal(UpdateRules.allowedDownload(URI.create(bad), github, false), false);
@@ -88,12 +88,12 @@ public class UpdateProbe {
             equal(UpdateRules.enabled(files), true);
             Files.writeString(new File(files, "pending-update.txt").toPath(), "1.0.2-rc1");
             equal(UpdateRules.pending(files, "1.0.1"), null);
-            equal(UpdateRules.checkAndStore(files, true, true, "1.0.1", "com.aure.totk", false, github, () -> tag("1.0.2")), "1.0.2");
+            equal(UpdateRules.checkAndStore(files, true, true, "1.0.1", "com.coupe5e.totk.nova", false, github, () -> tag("1.0.2")), "1.0.2");
             equal(UpdateRules.pending(files, "1.0.1"), "1.0.2");
             File blocked = new File(files, "not-a-directory");
             Files.write(blocked.toPath(), new byte[]{1});
             int[] attempted = {0};
-            equal(UpdateRules.checkAndStore(blocked, true, true, "1.0.1", "com.aure.totk", false, github,
+            equal(UpdateRules.checkAndStore(blocked, true, true, "1.0.1", "com.coupe5e.totk.nova", false, github,
                     () -> { attempted[0]++; return tag("1.0.2"); }), null);
             equal(attempted[0], 1);
             break;

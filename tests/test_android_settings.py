@@ -18,7 +18,8 @@ ALLOWED = {'TOTK_FPS60', 'TOTK_GPU_TIME', 'TOTK_FRAMEGEN', 'TOTK_REALTIME', 'TOT
            'DM_PRESENT_INTERVAL', 'TOTK_PRESENT_SLOTS', 'TOTK_VK_PRESENT', 'TOTK_ACQUIRE_SLACK', 'TOTK_ACQUIRE_CLOCK',
            'TOTK_PACE', 'TOTK_ASYNC_REPLAY', 'TOTK_RENDER_RES', 'TOTK_POST_SCALE', 'TOTK_POST_SHARPNESS',
            'TOTK_POST_SGSR_SHARPNESS', 'TOTK_FXAA', 'TOTK_POST_AA', 'TOTK_SHADOW_RES', 'TOTK_OPERATION_MODE',
-           'TOTK_NATIVE_UI', 'TOTK_OVERLAY', 'TOTK_OVERLAY_POS', 'TOTK_COMPANION', 'TOTK_FACE_BUTTONS',
+           'TOTK_CHEAT_DURABILITY', 'TOTK_CHEAT_SHOPPING', 'TOTK_CHEAT_ARROWS', 'TOTK_CHEAT_BATTERY',
+           'TOTK_NATIVE_UI', 'TOTK_ASPECT', 'TOTK_OVERLAY', 'TOTK_OVERLAY_POS', 'TOTK_COMPANION', 'TOTK_FACE_BUTTONS',
            'TOTK_AUDIO_PREFILL_MS', 'TOTK_LOCALE', 'TOTK_LANG', 'TOTK_DATA_DIR', 'TOTK_RUMBLE', 'TOTK_RUMBLE_GAIN', 'TOTK_GYRO',
            'TOTK_AUTOLOAD', 'TOTK_VK_SPLIT_PASS_DRAWS', 'TOTK_ADPF_GPU', 'TOTK_FPS60_HYSTERESIS',
            'TOTK_UNCAPPED', 'TOTK_UNCAPPED_HZ', 'TOTK_UNCAPPED_INTERVAL', 'TOTK_FRAME_RATE_HINT', 'TOTK_FRAME_RATE_HINT_HZ'}
@@ -94,6 +95,16 @@ class SettingsTests(unittest.TestCase):
             'TOTK_FPS60=0', 'TOTK_ACQUIRE_SLACK=1', 'TOTK_POST_SCALE=off', 'TOTK_OPERATION_MODE=handheld', 'TOTK_NATIVE_UI=0',
             'TOTK_OVERLAY=off', 'TOTK_OVERLAY_POS=tr', 'TOTK_COMPANION=1', 'TOTK_FACE_BUTTONS=label', 'TOTK_AUDIO_PREFILL_MS=20',
             'TOTK_RUMBLE=1', 'TOTK_RUMBLE_GAIN=1.0', 'TOTK_GYRO=1', 'TOTK_LOCALE=en-GB'])
+
+    def test_aspect_ratio_only_overrides_the_game_when_selected(self):
+        self.assertIn('TOTK_ASPECT=4:3', self.env(aspect_ratio='4:3'))
+        self.assertFalse(any(line.startswith('TOTK_ASPECT=') for line in self.env(aspect_ratio='16:9')))
+
+    def test_cheats_are_independently_opt_in(self):
+        for key in ('durability', 'shopping', 'arrows', 'battery'):
+            env = self.env(**{'cheat_' + key: 'on'})
+            self.assertEqual([line for line in env if line.startswith('TOTK_CHEAT_')],
+                             ['TOTK_CHEAT_' + key.upper() + '=1'])
 
     def test_every_option_maps_as_the_contract_says(self):
         env = self.env('-', frame_rate='60', render_res='960x540', latency='smoothest', upscaler='fsr', sharpness_fsr='35',

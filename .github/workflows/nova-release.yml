@@ -24,7 +24,18 @@ jobs:
       - name: Prepare toolchain and pinned driver
         run: |
           python -m pip install cryptography==50.0.2
-          sdkmanager 'platforms;android-33' 'build-tools;35.0.0' 'ndk;28.2.13676358'
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [[ ! -x "$sdkmanager" ]]; then
+            export ANDROID_HOME="$RUNNER_TEMP/android-sdk"
+            curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o "$RUNNER_TEMP/android-tools.zip"
+            unzip -q "$RUNNER_TEMP/android-tools.zip" -d "$RUNNER_TEMP/android-tools"
+            mkdir -p "$ANDROID_HOME/cmdline-tools"
+            mv "$RUNNER_TEMP/android-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+            sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          fi
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          yes | "$sdkmanager" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
+          "$sdkmanager" --sdk_root="$ANDROID_HOME" 'platforms;android-33' 'build-tools;35.0.0' 'ndk;28.2.13676358'
           dotnet --list-sdks
           curl --fail --silent --show-error --location \
             https://github.com/AurelioB/totk-android/releases/download/v1.0.1/TotK-Native-1.0.1.apk \

@@ -13,7 +13,42 @@ final class Settings {
     static final String CUSTOM = "custom";
     static final String CHEATS = "cheats";
     static final String[] CHEAT_OPTIONS = {"cheat_durability", "cheat_shopping", "cheat_arrows", "cheat_battery",
-            "cheat_stamina", "cheat_horse_stamina"};
+            "cheat_stamina", "cheat_horse_stamina", "cheat_health", "cheat_food_buff",
+            "cheat_sword_trial_stamina",
+            "cheat_stealth",
+            "cheat_temperature",
+            "cheat_gloom",
+            "cheat_sage_cooldown",
+            "cheat_weapon_charge",
+            "cheat_bow_charge",
+            "cheat_quickfire",
+            "cheat_dive_boost",
+            "cheat_jump",
+            "cheat_always_run",
+            "cheat_items",
+            "cheat_zonai_stock",
+            "cheat_zonai_duration",
+            "cheat_food",
+            "cheat_map_shrines_caves",
+            "cheat_map_koroks",
+            "cheat_map_shrines_roots",
+            "cheat_map_towers",
+            "cheat_map_tears",
+            "cheat_map_statues",
+            "cheat_map_towns",
+            "cheat_map_unvisited",
+            "cheat_map_caves",
+            "cheat_map_fairies_treasure",
+            "cheat_map_old_maps",
+            "cheat_map_temples",
+            "cheat_map_dispensers",
+            "cheat_map_restaurants",
+            "cheat_zonai_limit",
+            "cheat_fog",
+            "cheat_blood_moon",
+            "cheat_damage",
+            "cheat_day_length",
+    };
     /** Preset ids in card order; CUSTOM is computed, never applied. */
     static final String[] PRESETS = {"light", "balanced", "smooth", "60fps"};
 
@@ -54,6 +89,42 @@ final class Settings {
         new Option("cheat_battery", CHEATS, "off", "off", "on"),
         new Option("cheat_stamina", CHEATS, "off", "off", "on"),
         new Option("cheat_horse_stamina", CHEATS, "off", "off", "on"),
+        new Option("cheat_health", CHEATS, "off", "off", "on"),
+        new Option("cheat_food_buff", CHEATS, "off", "off", "on"),
+        new Option("cheat_sword_trial_stamina", CHEATS, "off", "off", "on"),
+        new Option("cheat_stealth", CHEATS, "off", "off", "on"),
+        new Option("cheat_temperature", CHEATS, "off", "off", "on"),
+        new Option("cheat_gloom", CHEATS, "off", "off", "on"),
+        new Option("cheat_sage_cooldown", CHEATS, "off", "off", "on"),
+        new Option("cheat_weapon_charge", CHEATS, "off", "off", "on"),
+        new Option("cheat_bow_charge", CHEATS, "off", "off", "on"),
+        new Option("cheat_quickfire", CHEATS, "off", "off", "on"),
+        new Option("cheat_dive_boost", CHEATS, "off", "off", "on"),
+        new Option("cheat_jump", CHEATS, "off", "off", "on"),
+        new Option("cheat_always_run", CHEATS, "off", "off", "on"),
+        new Option("cheat_items", CHEATS, "off", "off", "on"),
+        new Option("cheat_zonai_stock", CHEATS, "off", "off", "on"),
+        new Option("cheat_zonai_duration", CHEATS, "off", "off", "on"),
+        new Option("cheat_food", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_shrines_caves", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_koroks", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_shrines_roots", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_towers", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_tears", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_statues", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_towns", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_unvisited", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_caves", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_fairies_treasure", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_old_maps", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_temples", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_dispensers", CHEATS, "off", "off", "on"),
+        new Option("cheat_map_restaurants", CHEATS, "off", "off", "on"),
+        new Option("cheat_zonai_limit", CHEATS, "off", "off", "on"),
+        new Option("cheat_fog", CHEATS, "off", "off", "on"),
+        new Option("cheat_blood_moon", CHEATS, "off", "off", "on"),
+        new Option("cheat_damage", CHEATS, "off", "off", "2x", "4x", "10x", "30x"),
+        new Option("cheat_day_length", CHEATS, "off", "off", "stop", "2x", "3x", "4x"),
         new Option("native_hud", SCREEN, "off", "off", "on"),
         new Option("overlay", SCREEN, "off", "off", "fps", "full"),
         new Option("overlay_pos", SCREEN, "tr", "tl", "tr", "bl", "br"),
@@ -273,8 +344,9 @@ final class Settings {
         line(out, "TOTK_OPERATION_MODE=" + get("console_mode"));
         if ("4:3".equals(get("aspect_ratio"))) line(out, "TOTK_ASPECT=4:3");
         for (String cheat : CHEAT_OPTIONS) {
-            if ("on".equals(get(cheat)))
-                line(out, "TOTK_" + cheat.toUpperCase(java.util.Locale.ROOT) + "=1");
+            String value = get(cheat);
+            if (!"off".equals(value))
+                line(out, "TOTK_" + cheat.toUpperCase(java.util.Locale.ROOT) + "=" + ("on".equals(value) ? "1" : value));
         }
         line(out, "TOTK_NATIVE_UI=" + (get("native_hud").equals("on") ? "1" : "0"));
         line(out, "TOTK_OVERLAY=" + get("overlay"));

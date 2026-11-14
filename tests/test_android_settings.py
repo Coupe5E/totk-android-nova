@@ -20,6 +20,41 @@ ALLOWED = {'TOTK_FPS60', 'TOTK_GPU_TIME', 'TOTK_FRAMEGEN', 'TOTK_REALTIME', 'TOT
            'TOTK_POST_SGSR_SHARPNESS', 'TOTK_FXAA', 'TOTK_POST_AA', 'TOTK_SHADOW_RES', 'TOTK_OPERATION_MODE',
            'TOTK_CHEAT_DURABILITY', 'TOTK_CHEAT_SHOPPING', 'TOTK_CHEAT_ARROWS', 'TOTK_CHEAT_BATTERY',
            'TOTK_CHEAT_STAMINA', 'TOTK_CHEAT_HORSE_STAMINA',
+           'TOTK_CHEAT_HEALTH', 'TOTK_CHEAT_FOOD_BUFF',
+           'TOTK_CHEAT_SWORD_TRIAL_STAMINA',
+           'TOTK_CHEAT_STEALTH',
+           'TOTK_CHEAT_TEMPERATURE',
+           'TOTK_CHEAT_GLOOM',
+           'TOTK_CHEAT_SAGE_COOLDOWN',
+           'TOTK_CHEAT_WEAPON_CHARGE',
+           'TOTK_CHEAT_BOW_CHARGE',
+           'TOTK_CHEAT_QUICKFIRE',
+           'TOTK_CHEAT_DIVE_BOOST',
+           'TOTK_CHEAT_JUMP',
+           'TOTK_CHEAT_ALWAYS_RUN',
+           'TOTK_CHEAT_ITEMS',
+           'TOTK_CHEAT_ZONAI_STOCK',
+           'TOTK_CHEAT_ZONAI_DURATION',
+           'TOTK_CHEAT_FOOD',
+           'TOTK_CHEAT_MAP_SHRINES_CAVES',
+           'TOTK_CHEAT_MAP_KOROKS',
+           'TOTK_CHEAT_MAP_SHRINES_ROOTS',
+           'TOTK_CHEAT_MAP_TOWERS',
+           'TOTK_CHEAT_MAP_TEARS',
+           'TOTK_CHEAT_MAP_STATUES',
+           'TOTK_CHEAT_MAP_TOWNS',
+           'TOTK_CHEAT_MAP_UNVISITED',
+           'TOTK_CHEAT_MAP_CAVES',
+           'TOTK_CHEAT_MAP_FAIRIES_TREASURE',
+           'TOTK_CHEAT_MAP_OLD_MAPS',
+           'TOTK_CHEAT_MAP_TEMPLES',
+           'TOTK_CHEAT_MAP_DISPENSERS',
+           'TOTK_CHEAT_MAP_RESTAURANTS',
+           'TOTK_CHEAT_ZONAI_LIMIT',
+           'TOTK_CHEAT_FOG',
+           'TOTK_CHEAT_BLOOD_MOON',
+           'TOTK_CHEAT_DAMAGE',
+           'TOTK_CHEAT_DAY_LENGTH',
            'TOTK_NATIVE_UI', 'TOTK_ASPECT', 'TOTK_OVERLAY', 'TOTK_OVERLAY_POS', 'TOTK_COMPANION', 'TOTK_FACE_BUTTONS',
            'TOTK_AUDIO_PREFILL_MS', 'TOTK_LOCALE', 'TOTK_LANG', 'TOTK_DATA_DIR', 'TOTK_RUMBLE', 'TOTK_RUMBLE_GAIN', 'TOTK_GYRO',
            'TOTK_AUTOLOAD', 'TOTK_VK_SPLIT_PASS_DRAWS', 'TOTK_ADPF_GPU', 'TOTK_FPS60_HYSTERESIS',
@@ -102,10 +137,15 @@ class SettingsTests(unittest.TestCase):
         self.assertFalse(any(line.startswith('TOTK_ASPECT=') for line in self.env(aspect_ratio='16:9')))
 
     def test_cheats_are_independently_opt_in(self):
-        for key in ('durability', 'shopping', 'arrows', 'battery', 'stamina', 'horse_stamina'):
+        for key in ('durability', 'shopping', 'arrows', 'battery', 'stamina', 'horse_stamina', 'food', 'map_koroks'):
             env = self.env(**{'cheat_' + key: 'on'})
             self.assertEqual([line for line in env if line.startswith('TOTK_CHEAT_')],
                              ['TOTK_CHEAT_' + key.upper() + '=1'])
+
+    def test_cheat_choices_emit_only_the_selected_variant(self):
+        env = self.env(cheat_damage='30x', cheat_day_length='stop')
+        self.assertEqual([line for line in env if line.startswith('TOTK_CHEAT_')],
+                         ['TOTK_CHEAT_DAMAGE=30x', 'TOTK_CHEAT_DAY_LENGTH=stop'])
 
     def test_every_option_maps_as_the_contract_says(self):
         env = self.env('-', frame_rate='60', render_res='960x540', latency='smoothest', upscaler='fsr', sharpness_fsr='35',

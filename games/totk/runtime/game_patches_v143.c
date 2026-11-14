@@ -1085,9 +1085,9 @@ typedef struct {
 
 /* Apply against the authenticated 1.4.3 image while text is writable.
  * Check every word before changing any of the cheat's sites. */
-static void apply_cheat(Module *m, const char *key, const CheatWord *words, size_t count) {
+static void apply_cheat_value(Module *m, const char *key, const char *value, const CheatWord *words, size_t count) {
     const char *enabled = getenv(key);
-    if (!enabled || strcmp(enabled, "1")) return;
+    if (!enabled || strcmp(enabled, value)) return;
     for (size_t i = 0; i < count; i++) {
         uint32_t offset = words[i].offset, actual;
         if (offset + sizeof actual > m->size) {
@@ -1105,9 +1105,40 @@ static void apply_cheat(Module *m, const char *key, const CheatWord *words, size
     fprintf(stderr, "[totk] %s applied\n", key);
 }
 
-/* MyNXCheats, TotK 1.4.3, build ID 277178B7DBA1B6D4, entries 2, 4, 5 and 30–32.
+static void apply_cheat(Module *m, const char *key, const CheatWord *words, size_t count) {
+    apply_cheat_value(m, key, "1", words, count);
+}
+
+/* MyNXCheats, TotK 1.4.3, build ID 277178B7DBA1B6D4.
  * The durability subroutine copies maximum durability into current durability. */
 static void patch_cheats(Module *m) {
+    uint64_t padding = (m->text_end + 15) & ~15ULL;
+    uint64_t executable_end = (m->text_end + 0xfff) & ~0xfffULL;
+    uint64_t food_stub = padding + 276;
+    if (food_stub + 12 <= executable_end && food_stub + 12 <= m->size) {
+        const CheatWord food_buff[] = {
+            {0x3067f4, 0xbd415e80, branch(0x3067f4, food_stub) | 0x80000000u},
+            {(uint32_t)food_stub, 0, 0xbd416280},
+            {(uint32_t)food_stub + 4, 0, 0xbd015e80},
+            {(uint32_t)food_stub + 8, 0, 0xd65f03c0},
+        };
+        apply_cheat(m, "TOTK_CHEAT_FOOD_BUFF", food_buff, sizeof food_buff / sizeof *food_buff);
+    }
+    uint64_t health_stub = padding + 976;
+    const char *thermal = getenv("TOTK_THERMAL_STEP");
+    if ((!thermal || strcmp(thermal, "1")) && health_stub + 20 <= executable_end && health_stub + 20 <= m->size) {
+        const CheatWord health[] = {
+            {0x4407d0, 0xf9400008, branch(0x4407d0, health_stub)},
+            {(uint32_t)health_stub, 0, 0xb9401808},
+            {(uint32_t)health_stub + 4, 0, 0x34000048},
+            {(uint32_t)health_stub + 8, 0, 0xb9000808},
+            {(uint32_t)health_stub + 12, 0, 0xf9400008},
+            {(uint32_t)health_stub + 16, 0, branch(health_stub + 16, 0x4407d4)},
+        };
+        apply_cheat(m, "TOTK_CHEAT_HEALTH", health, sizeof health / sizeof *health);
+    } else if (getenv("TOTK_CHEAT_HEALTH")) {
+        fprintf(stderr, "[totk] TOTK_CHEAT_HEALTH skipped: no free executable padding\n");
+    }
     static const CheatWord shopping[] = {{0x250767c, 0x5a980715, 0x1a9813f5}};
     static const CheatWord arrows[] = {{0x1b78cd0, 0x12800001, 0x2a1f03e1}};
     static const CheatWord battery[] = {
@@ -1136,6 +1167,177 @@ static void patch_cheats(Module *m) {
     static const CheatWord horse_stamina[] = {{0x233765c, 0x71000508, 0xd503201f}};
     apply_cheat(m, "TOTK_CHEAT_STAMINA", stamina, sizeof stamina / sizeof *stamina);
     apply_cheat(m, "TOTK_CHEAT_HORSE_STAMINA", horse_stamina, sizeof horse_stamina / sizeof *horse_stamina);
+    /* Master Sword stamina */
+    apply_cheat_value(m, "TOTK_CHEAT_SWORD_TRIAL_STAMINA", "1", (const CheatWord[]){
+        {0x6e0838, 0x9b292908, 0xd2a8b76f},
+        {0x6e083c, 0xbd401d00, 0xf2b0000f},
+        {0x6e0840, 0xbd000260, 0xb900026f},
+    }, 3);
+    /* Stealth mode */
+    apply_cheat_value(m, "TOTK_CHEAT_STEALTH", "1", (const CheatWord[]){
+        {0x4c4d14, 0x1e204100, 0x1e2703e0},
+        {0x4cb9bc, 0x1e200c20, 0x1e2703e0},
+    }, 2);
+    /* Temperature protection */
+    apply_cheat_value(m, "TOTK_CHEAT_TEMPERATURE", "1", (const CheatWord[]){
+        {0x324c14, 0xb9400008, 0x52800068},
+        {0x72ae28, 0x1a9f57e0, 0x2a1f03e0},
+        {0x72b124, 0xbd400009, 0xbd400809},
+    }, 3);
+    /* Ignore gloom effects */
+    apply_cheat_value(m, "TOTK_CHEAT_GLOOM", "1", (const CheatWord[]){
+        {0x4414fc, 0x1a89c115, 0x1a89c135},
+        {0x441520, 0x52800095, 0x2a1f03f5},
+    }, 2);
+    /* Instant sage abilities */
+    apply_cheat_value(m, "TOTK_CHEAT_SAGE_COOLDOWN", "1", (const CheatWord[]){
+        {0x1ae99c, 0x1e212000, 0x1e212020},
+        {0x1b5b2c, 0x1e280400, 0x1e282100},
+        {0x6343d0, 0x1e212000, 0x1e212020},
+    }, 3);
+    /* Faster weapon charge */
+    apply_cheat_value(m, "TOTK_CHEAT_WEAPON_CHARGE", "1", (const CheatWord[]){
+        {0x1b7a460, 0x1e201c20, 0x1e211000},
+    }, 1);
+    /* Faster bow charge */
+    apply_cheat_value(m, "TOTK_CHEAT_BOW_CHARGE", "1", (const CheatWord[]){
+        {0x23bbe00, 0x1e204100, 0x1e209000},
+    }, 1);
+    /* Quickfire bow */
+    apply_cheat_value(m, "TOTK_CHEAT_QUICKFIRE", "1", (const CheatWord[]){
+        {0x23bcd2c, 0x2d1f8260, 0x291fa268},
+    }, 1);
+    /* Dive boost */
+    apply_cheat_value(m, "TOTK_CHEAT_DIVE_BOOST", "1", (const CheatWord[]){
+        {0x23f0864, 0x97dd371f, 0x1e211000},
+    }, 1);
+    /* Higher jumps */
+    apply_cheat_value(m, "TOTK_CHEAT_JUMP", "1", (const CheatWord[]){
+        {0xbd3788, 0x1e211c41, 0x1e209001},
+    }, 1);
+    /* Default to running */
+    apply_cheat_value(m, "TOTK_CHEAT_ALWAYS_RUN", "1", (const CheatWord[]){
+        {0x23f6448, 0x396b6288, 0x52800028},
+    }, 1);
+    /* Items ×999 */
+    apply_cheat_value(m, "TOTK_CHEAT_ITEMS", "1", (const CheatWord[]){
+        {0xa77b40, 0x0b0300c3, 0x52807ce3},
+    }, 1);
+    /* Infinite Zonai devices */
+    apply_cheat_value(m, "TOTK_CHEAT_ZONAI_STOCK", "1", (const CheatWord[]){
+        {0x20b2a1c, 0x12800001, 0x2a1f03e1},
+    }, 1);
+    /* Endless Zonai device duration */
+    apply_cheat_value(m, "TOTK_CHEAT_ZONAI_DURATION", "1", (const CheatWord[]){
+        {0x1ccc718, 0x1e201c42, 0x1e2703e2},
+    }, 1);
+    /* Infinite food */
+    apply_cheat_value(m, "TOTK_CHEAT_FOOD", "1", (const CheatWord[]){
+        {0x20b3abc, 0x12800001, 0x2a1f03e1},
+        {0x20b3b98, 0x54fffe2c, 0x17fffff2},
+    }, 2);
+    /* Reveal shrines and caves */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_SHRINES_CAVES", "1", (const CheatWord[]){
+        {0x20f6f10, 0xd10183ff, 0x52800020},
+        {0x20f6f14, 0xfd0013ea, 0xd65f03c0},
+        {0x7362d0, 0xd101c3ff, 0x52800020},
+        {0x7362d4, 0xfd001bea, 0xd65f03c0},
+    }, 4);
+    /* Reveal Koroks while zoomed in */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_KOROKS", "1", (const CheatWord[]){
+        {0x20fc7a4, 0x39407688, 0x1400002e},
+    }, 1);
+    /* Show shrines and lightroots */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_SHRINES_ROOTS", "1", (const CheatWord[]){
+        {0x20f6ff0, 0x34000248, 0xd503201f},
+    }, 1);
+    /* Show Skyview Towers */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_TOWERS", "1", (const CheatWord[]){
+        {0x736614, 0x340002c8, 0xd503201f},
+    }, 1);
+    /* Show Dragon’s Tears */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_TEARS", "1", (const CheatWord[]){
+        {0x20fd158, 0x34fffbe8, 0xd503201f},
+    }, 1);
+    /* Show Bargainer Statues */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_STATUES", "1", (const CheatWord[]){
+        {0x20fedd4, 0x34fffbe8, 0xd503201f},
+    }, 1);
+    /* Show villages and stables */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_TOWNS", "1", (const CheatWord[]){
+        {0x736ce0, 0x394073a8, 0x52800028},
+    }, 1);
+    /* Show unvisited locations */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_UNVISITED", "1", (const CheatWord[]){
+        {0x20f9f9c, 0x340000e8, 0xd503201f},
+    }, 1);
+    /* Show caves, wells and chasms */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_CAVES", "1", (const CheatWord[]){
+        {0x736488, 0x34fffe4d, 0xd503201f},
+        {0x7364f8, 0x394063e8, 0x52800028},
+    }, 2);
+    /* Show Great Fairies and Misko’s treasure */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_FAIRIES_TREASURE", "1", (const CheatWord[]){
+        {0x20fe2bc, 0x34fffba8, 0xd503201f},
+    }, 1);
+    /* Show old maps */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_OLD_MAPS", "1", (const CheatWord[]){
+        {0x20fdc68, 0x34fffb48, 0xd503201f},
+    }, 1);
+    /* Show temples */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_TEMPLES", "1", (const CheatWord[]){
+        {0x20f8068, 0x34000988, 0xd503201f},
+    }, 1);
+    /* Show Zonai dispensers */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_DISPENSERS", "1", (const CheatWord[]){
+        {0x20fcce4, 0x34fffa88, 0xd503201f},
+    }, 1);
+    /* Show game fields and restaurants */
+    apply_cheat_value(m, "TOTK_CHEAT_MAP_RESTAURANTS", "1", (const CheatWord[]){
+        {0xeccdbc, 0x34fff7e8, 0xd503201f},
+    }, 1);
+    /* Remove Zonai device limit */
+    apply_cheat_value(m, "TOTK_CHEAT_ZONAI_LIMIT", "1", (const CheatWord[]){
+        {0x1c0ba70, 0xb9401268, 0x52800028},
+    }, 1);
+    /* Disable fog */
+    apply_cheat_value(m, "TOTK_CHEAT_FOG", "1", (const CheatWord[]){
+        {0x67fcc4, 0x1e2e1003, 0x1e2703e3},
+    }, 1);
+    /* Trigger Blood Moon */
+    apply_cheat_value(m, "TOTK_CHEAT_BLOOD_MOON", "1", (const CheatWord[]){
+        {0x1fd39cc, 0x1e2e1001, 0x1e3e1001},
+    }, 1);
+    /* Damage multiplier */
+    apply_cheat_value(m, "TOTK_CHEAT_DAMAGE", "2x", (const CheatWord[]){
+        {0x335c40, 0x1e2e1008, 0x1e201008},
+        {0x335ca0, 0xbd400008, 0x1e201008},
+    }, 2);
+    apply_cheat_value(m, "TOTK_CHEAT_DAMAGE", "4x", (const CheatWord[]){
+        {0x335c40, 0x1e2e1008, 0x1e221008},
+        {0x335ca0, 0xbd400008, 0x1e221008},
+    }, 2);
+    apply_cheat_value(m, "TOTK_CHEAT_DAMAGE", "10x", (const CheatWord[]){
+        {0x335c40, 0x1e2e1008, 0x1e249008},
+        {0x335ca0, 0xbd400008, 0x1e249008},
+    }, 2);
+    apply_cheat_value(m, "TOTK_CHEAT_DAMAGE", "30x", (const CheatWord[]){
+        {0x335c40, 0x1e2e1008, 0x1e27d008},
+        {0x335ca0, 0xbd400008, 0x1e27d008},
+    }, 2);
+    /* In-game time */
+    apply_cheat_value(m, "TOTK_CHEAT_DAY_LENGTH", "stop", (const CheatWord[]){
+        {0x68c15c, 0xbd403e69, 0xd503201f},
+    }, 1);
+    apply_cheat_value(m, "TOTK_CHEAT_DAY_LENGTH", "2x", (const CheatWord[]){
+        {0x68c15c, 0xbd403e69, 0x1e2e1009},
+    }, 1);
+    apply_cheat_value(m, "TOTK_CHEAT_DAY_LENGTH", "3x", (const CheatWord[]){
+        {0x68c15c, 0xbd403e69, 0x1e2c1009},
+    }, 1);
+    apply_cheat_value(m, "TOTK_CHEAT_DAY_LENGTH", "4x", (const CheatWord[]){
+        {0x68c15c, 0xbd403e69, 0x1e2a1009},
+    }, 1);
 }
 #endif
 void runtime_game_patches(Module *m) {

@@ -1272,7 +1272,14 @@ public final class SetupActivity extends Activity implements SetupService.Listen
                 keys.addAll(Arrays.asList("console_mode", "aspect_ratio", "native_hud", "overlay", "overlay_pos"));
                 if (SettingsStore.secondaryDisplay(this)) keys.add("second_screen");
         }
-        for (String key : keys) settingRow(list, key);
+        LinearLayout rows = list;
+        if (tab.equals(Settings.CHEATS)) {
+            ScrollView scroll = new ScrollView(this);
+            rows = Widgets.column(this);
+            scroll.addView(rows);
+            list.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
+        }
+        for (String key : keys) settingRow(rows, key);
         detailPanel();
         if (setupFinished) {
             // Setup's last step: the recommended preset is selected; one press on Start game plays.

@@ -142,6 +142,8 @@ final class Strings {
             case "cheat_shopping": return "Free shopping";
             case "cheat_arrows": return "Infinite arrows";
             case "cheat_battery": return "Infinite Zonai energy";
+            case "cheat_stamina": return "Infinite stamina";
+            case "cheat_horse_stamina": return "Infinite horse stamina";
             case "native_hud": return "Native HUD";
             case "overlay": return "Performance overlay";
             case "overlay_pos": return "Overlay position";
@@ -171,6 +173,8 @@ final class Strings {
             case "cheat_shopping": return "Buy items without spending rupees";
             case "cheat_arrows": return "Shoot without consuming arrows";
             case "cheat_battery": return "Keep Zonai devices powered";
+            case "cheat_stamina": return "Keep Link’s stamina from draining";
+            case "cheat_horse_stamina": return "Ride without using horse stamina";
             case "native_hud": return "Draws menus and text at the panel's own resolution";
             case "overlay": return "Frame rate and frame time while you play";
             case "overlay_pos": return "Corner of the screen";
@@ -522,8 +526,8 @@ final class Strings {
             case "absolute": case "traversal": return "This dump has file names that point outside its folder, so it was not imported.";
             case "symlink": return "This dump contains links, which a save set never has, so it was not imported.";
             case "too_many": return "This has more than 500 files, so it is not a TotK save set.";
-            case "too_big": return "This is larger than 128 MB, so it is not a TotK save set.";
-            case "huge_file": return "It contains a file far larger than any save file, so it was not imported.";
+            case "too_big": case "huge_file":
+                return detail == null || detail.isEmpty() ? "The import exceeded a save size limit." : detail;
             case "no_saves": return "No TotK saves found. A save set has slot_00 … slot_05 folders with progress.sav, or option.sav.";
             case "corrupt": return "The saves are damaged or do not match their list of files" + (detail == null ? "." : ": " + detail);
             case "not_zip": return "That file is not a zip archive.";

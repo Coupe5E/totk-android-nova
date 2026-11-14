@@ -2085,7 +2085,7 @@ public final class SetupActivity extends Activity implements SetupService.Listen
                 selection = tree ? SaveMirror.stageFolder(this, uri, staged) : SaveMirror.stageZip(this, uri, staged);
                 slots = SaveManager.slots(staged);
                 for (SaveManager.Slot s : slots) decodeCaption(s);
-            } catch (SaveManager.Invalid invalid) { failed = Strings.saveError(invalid.code, invalid.getMessage()); }
+            } catch (SaveManager.Invalid invalid) { failed = Strings.saveError(invalid.code, invalid.detail); }
             catch (SaveMirror.Unavailable gone) { failed = Strings.saveError("unavailable", null); }
             catch (IOException | RuntimeException error) { failed = Strings.saveError("", error.getMessage()); }
             if (failed != null) SaveManager.delete(staged);

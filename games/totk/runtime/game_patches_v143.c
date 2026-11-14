@@ -1053,6 +1053,14 @@ static void patch_menu_capture(Module *m){
 #if TARGET_OS_IPHONE
     (void)m;return;
 #else
+#if defined(__ANDROID__) && defined(TOTK_ANDROID_APP)
+    const char *thermal = getenv("TOTK_THERMAL_STEP");
+    const char *fps60_enabled = getenv("TOTK_FPS60");
+    if (thermal && !strcmp(thermal, "1") && (!fps60_enabled || strcmp(fps60_enabled, "0"))) {
+        fprintf(stderr, "[totk] 1.4.3 menu capture fix skipped: thermal veneer uses the same padding\n");
+        return;
+    }
+#endif
     uint64_t stub=((m->text_end+15)&~15ULL)+960;   /* after the FPS60 hardening veneer (+416, 125 words) */
     const Patch guards[]={{0x105bbcc,0},{0x105bbd0,0}};   /* ldrb w8, [x0, #0xd5]; cbnz w8 (armed) */
     uint32_t orig[2];
@@ -1097,7 +1105,7 @@ static void apply_cheat(Module *m, const char *key, const CheatWord *words, size
     fprintf(stderr, "[totk] %s applied\n", key);
 }
 
-/* MyNXCheats, TotK 1.4.3, build ID 277178B7DBA1B6D4, entries 4 and 30–32.
+/* MyNXCheats, TotK 1.4.3, build ID 277178B7DBA1B6D4, entries 2, 4, 5 and 30–32.
  * The durability subroutine copies maximum durability into current durability. */
 static void patch_cheats(Module *m) {
     static const CheatWord shopping[] = {{0x250767c, 0x5a980715, 0x1a9813f5}};
@@ -1124,6 +1132,10 @@ static void patch_cheats(Module *m) {
     apply_cheat(m, "TOTK_CHEAT_SHOPPING", shopping, sizeof shopping / sizeof *shopping);
     apply_cheat(m, "TOTK_CHEAT_ARROWS", arrows, sizeof arrows / sizeof *arrows);
     apply_cheat(m, "TOTK_CHEAT_BATTERY", battery, sizeof battery / sizeof *battery);
+    static const CheatWord stamina[] = {{0x031d398, 0x1f080800, 0x1e204040}};
+    static const CheatWord horse_stamina[] = {{0x233765c, 0x71000508, 0xd503201f}};
+    apply_cheat(m, "TOTK_CHEAT_STAMINA", stamina, sizeof stamina / sizeof *stamina);
+    apply_cheat(m, "TOTK_CHEAT_HORSE_STAMINA", horse_stamina, sizeof horse_stamina / sizeof *horse_stamina);
 }
 #endif
 void runtime_game_patches(Module *m) {

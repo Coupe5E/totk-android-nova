@@ -19,6 +19,7 @@ ALLOWED = {'TOTK_FPS60', 'TOTK_GPU_TIME', 'TOTK_FRAMEGEN', 'TOTK_REALTIME', 'TOT
            'TOTK_PACE', 'TOTK_ASYNC_REPLAY', 'TOTK_RENDER_RES', 'TOTK_POST_SCALE', 'TOTK_POST_SHARPNESS',
            'TOTK_POST_SGSR_SHARPNESS', 'TOTK_FXAA', 'TOTK_POST_AA', 'TOTK_SHADOW_RES', 'TOTK_OPERATION_MODE',
            'TOTK_CHEAT_DURABILITY', 'TOTK_CHEAT_SHOPPING', 'TOTK_CHEAT_ARROWS', 'TOTK_CHEAT_BATTERY',
+           'TOTK_CHEAT_STAMINA', 'TOTK_CHEAT_HORSE_STAMINA',
            'TOTK_NATIVE_UI', 'TOTK_ASPECT', 'TOTK_OVERLAY', 'TOTK_OVERLAY_POS', 'TOTK_COMPANION', 'TOTK_FACE_BUTTONS',
            'TOTK_AUDIO_PREFILL_MS', 'TOTK_LOCALE', 'TOTK_LANG', 'TOTK_DATA_DIR', 'TOTK_RUMBLE', 'TOTK_RUMBLE_GAIN', 'TOTK_GYRO',
            'TOTK_AUTOLOAD', 'TOTK_VK_SPLIT_PASS_DRAWS', 'TOTK_ADPF_GPU', 'TOTK_FPS60_HYSTERESIS',
@@ -101,7 +102,7 @@ class SettingsTests(unittest.TestCase):
         self.assertFalse(any(line.startswith('TOTK_ASPECT=') for line in self.env(aspect_ratio='16:9')))
 
     def test_cheats_are_independently_opt_in(self):
-        for key in ('durability', 'shopping', 'arrows', 'battery'):
+        for key in ('durability', 'shopping', 'arrows', 'battery', 'stamina', 'horse_stamina'):
             env = self.env(**{'cheat_' + key: 'on'})
             self.assertEqual([line for line in env if line.startswith('TOTK_CHEAT_')],
                              ['TOTK_CHEAT_' + key.upper() + '=1'])

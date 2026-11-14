@@ -54,7 +54,12 @@ final class SaveManager {
      * no_saves | corrupt | not_zip | game_running. */
     static final class Invalid extends IOException {
         final String code;
-        Invalid(String code, String detail) { super(code + (detail == null ? "" : ": " + detail)); this.code = code; }
+        final String detail;
+        Invalid(String code, String detail) {
+            super(code + (detail == null ? "" : ": " + detail));
+            this.code = code;
+            this.detail = detail;
+        }
     }
 
     // ---------- manifest ----------
@@ -472,13 +477,15 @@ final class SaveManager {
             String relative = c.path.substring(best.length());
             if (relative.equals(MANIFEST)) { selection.manifestSource = c.path; continue; }
             long limit = KNOWN.matcher(relative).matches() ? MAX_KNOWN_FILE : MAX_OTHER_FILE;
-            if (c.size > limit) throw new Invalid("huge_file", relative + " (" + c.size + " bytes)");
+            if (c.size > limit) throw new Invalid("huge_file", relative + " is " + c.size
+                    + " bytes when unpacked. The limit for this file is " + (limit >> 20) + " MiB.");
             if (c.size < 0) throw new Invalid("corrupt", relative + " has no size");
             selection.total += c.size;
             selection.files.add(new Candidate(relative, c.size, false, c.mtime));
             selection.sources.put(relative, c.path);
             if (selection.files.size() > MAX_FILES) throw new Invalid("too_many", "more than " + MAX_FILES + " files");
-            if (selection.total > MAX_TOTAL) throw new Invalid("too_big", selection.total + " bytes");
+            if (selection.total > MAX_TOTAL)
+                throw new Invalid("too_big", "The selected save files exceed " + (MAX_TOTAL >> 20) + " MiB when unpacked.");
         }
         return selection;
     }
@@ -493,7 +500,7 @@ final class SaveManager {
             byte[] buffer = new byte[64 * 1024];
             for (int n; (n = in.read(buffer)) > 0;) {
                 written += n;
-                if (written > limit) throw new Invalid("too_big", out.getName() + " is larger than its listed size");
+                if (written > limit) throw new Invalid("too_big", out.getName() + " exceeds its " + limit + "-byte copy limit.");
                 o.write(buffer, 0, n);
             }
             o.getFD().sync();

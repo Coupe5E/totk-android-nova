@@ -12,7 +12,8 @@ final class Settings {
     static final String PERFORMANCE = "performance", PICTURE = "picture", SCREEN = "screen", CONTROLS = "controls";
     static final String CUSTOM = "custom";
     static final String CHEATS = "cheats";
-    static final String[] CHEAT_OPTIONS = {"cheat_durability", "cheat_shopping", "cheat_arrows", "cheat_battery"};
+    static final String[] CHEAT_OPTIONS = {"cheat_durability", "cheat_shopping", "cheat_arrows", "cheat_battery",
+            "cheat_stamina", "cheat_horse_stamina"};
     /** Preset ids in card order; CUSTOM is computed, never applied. */
     static final String[] PRESETS = {"light", "balanced", "smooth", "60fps"};
 
@@ -51,6 +52,8 @@ final class Settings {
         new Option("cheat_shopping", CHEATS, "off", "off", "on"),
         new Option("cheat_arrows", CHEATS, "off", "off", "on"),
         new Option("cheat_battery", CHEATS, "off", "off", "on"),
+        new Option("cheat_stamina", CHEATS, "off", "off", "on"),
+        new Option("cheat_horse_stamina", CHEATS, "off", "off", "on"),
         new Option("native_hud", SCREEN, "off", "off", "on"),
         new Option("overlay", SCREEN, "off", "off", "fps", "full"),
         new Option("overlay_pos", SCREEN, "tr", "tl", "tr", "bl", "br"),

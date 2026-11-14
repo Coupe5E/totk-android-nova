@@ -1265,6 +1265,7 @@ static const char *const settings_keys[] = {
     /* 40/Unlimited producer clocks and validated display-rate requests (not observed modes). */
     "TOTK_UNCAPPED", "TOTK_UNCAPPED_HZ", "TOTK_UNCAPPED_INTERVAL", "TOTK_FRAME_RATE_HINT", "TOTK_FRAME_RATE_HINT_HZ",
     "TOTK_CHEAT_DURABILITY", "TOTK_CHEAT_SHOPPING", "TOTK_CHEAT_ARROWS", "TOTK_CHEAT_BATTERY",
+    "TOTK_CHEAT_STAMINA", "TOTK_CHEAT_HORSE_STAMINA",
     "TOTK_DATA_DIR",
 };
 static int settings_key(const char *name) {

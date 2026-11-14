@@ -1,0 +1,64 @@
+name: Nova Android release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.repository == 'Coupe5E/totk-android-nova'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.14'
+      - name: Prepare toolchain and pinned driver
+        run: |
+          python -m pip install cryptography==50.0.2
+          sdkmanager 'platforms;android-33' 'build-tools;35.0.0' 'ndk;28.2.13676358'
+          dotnet --list-sdks
+          curl --fail --silent --show-error --location \
+            https://github.com/AurelioB/totk-android/releases/download/v1.0.1/TotK-Native-1.0.1.apk \
+            -o "$RUNNER_TEMP/upstream.apk"
+          unzip -p "$RUNNER_TEMP/upstream.apk" lib/arm64-v8a/libtotk_turnip.so > "$RUNNER_TEMP/driver.so"
+      - name: Build, sign and audit the APK
+        env:
+          NOVA_SIGNING_KEY: ${{ secrets.NOVA_SIGNING_KEY }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          [[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          if [[ -z "$NOVA_SIGNING_KEY" ]]; then
+            echo "::error::The NOVA_SIGNING_KEY repository secret is missing."
+            exit 1
+          fi
+          umask 077
+          key=$(mktemp)
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$NOVA_SIGNING_KEY" > "$key"
+          unset NOVA_SIGNING_KEY
+          mkdir -p dist
+          apk="TotK-Native-$version.apk"
+          python games/totk/android/build_release.py \
+            --ndk "$ANDROID_HOME/ndk/28.2.13676358" \
+            --android-sdk "$ANDROID_HOME" \
+            --turnip "$RUNNER_TEMP/driver.so" \
+            --key "$key" --version-name "$version" -o "dist/$apk"
+          (cd dist && sha256sum "$apk" > "$apk.sha256")
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" --verify-tag --latest \
+            --title "TotK Native Nova $version" \
+            --notes "Includes 4:3 output, optional cheats, and the Nova update channel." \
+            "dist/TotK-Native-$version.apk" "dist/TotK-Native-$version.apk.sha256"

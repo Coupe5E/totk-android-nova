@@ -48,21 +48,28 @@ public final class Updates {
                 && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
     }
     public static void check(Context context, Consumer<String> result) {
+        check(context, false, result);
+    }
+    public static void checkNow(Context context, Consumer<String> result) {
+        check(context, true, result);
+    }
+    private static void check(Context context, boolean manual, Consumer<String> result) {
         Context app = context.getApplicationContext();
         Handler main = new Handler(Looper.getMainLooper());
         AtomicBoolean finished = new AtomicBoolean();
         UpdateTransfer transfer = new UpdateTransfer();
         // Includes DNS, connect and read time, not merely each socket operation. A late worker never posts a prompt.
         Runnable deadline = () -> { if (finished.compareAndSet(false, true)) { transfer.cancel(); result.accept(null); } };
-        main.postDelayed(deadline, 5000);
+        main.postDelayed(deadline, manual ? 12000 : 5000);
         Thread worker = new Thread(() -> {
             String answer = null;
             try {
                 Source source = source(app);
-                answer = UpdateRules.checkAndStore(app.getFilesDir(), UpdateRules.enabled(app.getFilesDir()), online(app), version(app), app.getPackageName(),
+                answer = UpdateRules.checkAndStore(app.getFilesDir(), manual || UpdateRules.enabled(app.getFilesDir()), online(app), version(app), app.getPackageName(),
                         source.override, source.base, () -> {
-                            HttpURLConnection connection = transfer.connect(source.latest(), "HEAD", 2400);
+                            HttpURLConnection connection = transfer.connect(source.latest(), "HEAD", manual ? 5500 : 2400);
                             try {
+                                connection.setRequestProperty("Cache-Control", "no-cache");
                                 int status = connection.getResponseCode();
                                 transfer.checkCancelled();
                                 return status == 302 ? connection.getHeaderField("Location") : null;

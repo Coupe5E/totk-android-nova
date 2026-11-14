@@ -197,6 +197,9 @@ public final class SetupActivity extends Activity implements SetupService.Listen
         String version = pendingUpdate();
         if (version == null) return;
         pendingAsked = true;
+        offerUpdate(version);
+    }
+    private void offerUpdate(String version) {
         openChoice("about", Strings.UPDATES, Strings.updateAvailable(version), Strings.UPDATE_MENU_BODY,
                 new Object[]{"update:now", "Update", Strings.UPDATE_CLOSE_HINT, false, (Runnable) this::startAppUpdate},
                 new Object[]{"update:later", "Not now", "Keep this update for next launch", false, (Runnable) () -> replace(Screen.HOME)});
@@ -2373,6 +2376,17 @@ public final class SetupActivity extends Activity implements SetupService.Listen
         licencesRow.setOnClickListener(v -> go(Screen.LICENSES));
         Widgets.Row project = listRow(list, "about:project", Strings.PROJECT_ROW, Strings.PROJECT_URL, 92, 18);
         Widgets.Row updateRow = updateSwitch(list);
+        Widgets.Row checkNow = listRow(list, "about:check-update", "Check for updates now", "Check GitHub for a newer Nova release", 92, 18);
+        checkNow.setOnClickListener(v -> {
+            checkNow.setEnabled(false);
+            checkNow.hint.setText("Checking for updates…");
+            Updates.checkNow(this, found -> {
+                if (isDestroyed() || screen != Screen.ABOUT || !checkNow.isAttachedToWindow()) return;
+                checkNow.setEnabled(true);
+                checkNow.hint.setText(found == null ? "No newer release was found. Check your connection and try again." : "A newer release is available");
+                if (found != null) offerUpdate(found);
+            });
+        });
         detailPanel();
         detailNote.setVisibility(View.GONE);
         View.OnFocusChangeListener detail = (v, has) -> {
@@ -2389,7 +2403,7 @@ public final class SetupActivity extends Activity implements SetupService.Listen
             } else if (v == licencesRow) {
                 detailTitle.setText(Strings.LICENCES_ROW); detailText.setText(Strings.LICENCES_TEXT);
                 fact("Files", String.valueOf(licenceFiles().size()));
-            } else if (v == updateRow) {
+            } else if (v == updateRow || v == checkNow) {
                 detailTitle.setText(Strings.UPDATES); detailText.setText(Strings.UPDATE_PRIVACY);
             } else {
                 detailTitle.setText(Strings.PROJECT_ROW); detailText.setText(Strings.PROJECT_TEXT);
@@ -2399,6 +2413,7 @@ public final class SetupActivity extends Activity implements SetupService.Listen
         };
         versionRow.setOnFocusChangeListener(detail); licencesRow.setOnFocusChangeListener(detail); project.setOnFocusChangeListener(detail);
         updateRow.setOnFocusChangeListener(detail);
+        checkNow.setOnFocusChangeListener(detail);
         primary = versionRow;
         prompts(prompt("A", Strings.P_SELECT, v -> selectFocused()), backPrompt(), startPrompt());
     }

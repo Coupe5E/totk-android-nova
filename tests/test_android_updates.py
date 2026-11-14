@@ -24,7 +24,7 @@ public class UpdateProbe {
                 tag("01.0.2"), tag("1.2"), tag("1.0.2/"), tag("1.0.2?x=1"), tag("1.0.2#x"), tag("%31.0.2"),
                 tag("1.0.2").replace("github.com", "github.com.evil.test"), tag("1.0.2").replace("https:", "http:"),
                 tag("1.0.2").replace("github.com", "user@github.com"), tag("1.0.2").replace("github.com", "github.com:443"),
-                tag("1.0.2").replace("AurelioB", "Other")}) equal(UpdateRules.location(bad, github, false), null);
+                tag("1.0.2").replace("Coupe5E", "Other")}) equal(UpdateRules.location(bad, github, false), null);
             URI fake = URI.create("http://192.168.8.2:8042");
             equal(UpdateRules.location("http://192.168.8.2:8042/Coupe5E/totk-android-nova/releases/tag/v1.0.2", fake, true), "1.0.2");
             equal(UpdateRules.location("http://192.168.8.3:8042/Coupe5E/totk-android-nova/releases/tag/v1.0.2", fake, true), null);
